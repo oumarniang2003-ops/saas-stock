@@ -1,13 +1,184 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  EMPLOYEE
+}
+
+enum MovementType {
+  IN
+  OUT
+  ADJUSTMENT
+  TRANSFER
+}
+
+model Organization {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String?  @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users          User[]
+  categories     Category[]
+  products       Product[]
+  suppliers      Supplier[]
+  warehouses     Warehouse[]
+  stocks         Stock[]
+  stockMovements StockMovement[]
+
+  @@map("organizations")
+}
+
+model User {
+  id             String       @id @default(cuid())
+  clerkId        String       @unique
+  email          String
+  name           String?
+  role           Role         @default(EMPLOYEE)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  stockMovements StockMovement[]
+
+  @@index([organizationId])
+  @@map("users")
+}
+
+model Category {
+  id             String       @id @default(cuid())
+  name           String
+  description    String?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  products Product[]
+
+  @@index([organizationId])
+  @@map("categories")
+}
+
+model Supplier {
+  id             String       @id @default(cuid())
+  name           String
+  contactName    String?
+  email          String?
+  phone          String?
+  address        String?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  products Product[]
+
+  @@index([organizationId])
+  @@map("suppliers")
+}
+
+model Warehouse {
+  id             String       @id @default(cuid())
+  name           String
+  location       String?
+  isDefault      Boolean      @default(false)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  stocks          Stock[]
+  movementsFrom   StockMovement[] @relation("FromWarehouse")
+  movementsTo     StockMovement[] @relation("ToWarehouse")
+  stockMovements  StockMovement[] @relation("WarehouseMovements")
+
+  @@index([organizationId])
+  @@map("warehouses")
+}
+
+model Product {
+  id                String       @id @default(cuid())
+  name              String
+  sku               String
+  description       String?
+  price             Decimal      @default(0.0) @db.Decimal(12, 2)
+  costPrice         Decimal      @default(0.0) @db.Decimal(12, 2)
+  lowStockThreshold Int          @default(5)
+  unit              String       @default("pièce")
+  imageUrl          String?
+  categoryId        String?
+  category          Category?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  supplierId        String?
+  supplier          Supplier?    @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  stocks         Stock[]
+  stockMovements StockMovement[]
+
+  @@unique([organizationId, sku])
+  @@index([organizationId])
+  @@index([categoryId])
+  @@map("products")
+}
+
+model Stock {
+  id             String       @id @default(cuid())
+  quantity       Int          @default(0)
+  productId      String
+  product        Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  warehouseId    String
+  warehouse      Warehouse    @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([productId, warehouseId])
+  @@index([organizationId])
+  @@index([productId])
+  @@index([warehouseId])
+  @@map("stocks")
+}
+
+model StockMovement {
+  id              String        @id @default(cuid())
+  type            MovementType
+  quantity        Int
+  reason          String?
+  reference       String?
+  productId       String
+  product         Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  warehouseId     String?
+  warehouse       Warehouse?    @relation("WarehouseMovements", fields: [warehouseId], references: [id], onDelete: SetNull)
+  fromWarehouseId String?
+  fromWarehouse   Warehouse?    @relation("FromWarehouse", fields: [fromWarehouseId], references: [id], onDelete: SetNull)
+  toWarehouseId   String?
+  toWarehouse     Warehouse?    @relation("ToWarehouse", fields: [toWarehouseId], references: [id], onDelete: SetNull)
+  userId          String?
+  user            User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  organizationId  String
+  organization    Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt       DateTime      @default(now())
+
+  @@index([organizationId])
+  @@index([productId])
+  @@index([warehouseId])
+  @@index([createdAt])
+  @@map("stock_movements")
 }
