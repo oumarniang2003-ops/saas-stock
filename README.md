@@ -1,4 +1,12 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Configuration
+
+Copy `.env.example` to `.env` and fill in the values before running the app:
+
+- `DATABASE_URL` — connection string for your PostgreSQL database (used by Prisma).
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` / `CLERK_SECRET_KEY` — from your [Clerk dashboard](https://dashboard.clerk.com) > API Keys.
+
+**Deploying to Vercel:** these same variables must be added under Project Settings → Environment Variables. Without `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY`, the auth middleware throws on every request in production, causing a `500 MIDDLEWARE_INVOCATION_FAILED` error. After adding them, trigger a redeploy.
 
 ## Getting Started
 
