@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { X, ArrowDownRight, ArrowUpRight, Sliders, ArrowLeftRight, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { X, ArrowDownRight, ArrowUpRight, Sliders, ArrowLeftRight, Loader2, AlertCircle, CheckCircle2, Search, ChevronDown } from "lucide-react";
 import { recordStockMovement } from "@/actions/movements";
 import { getProducts } from "@/actions/products";
 import { getWarehouses } from "@/actions/warehouses";
@@ -33,6 +33,27 @@ export default function QuickMovementModal({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
+  const [productSearch, setProductSearch] = useState("");
+  const [isProductDropdownOpen, setIsProductDropdownOpen] = useState(false);
+  const productFieldRef = useRef<HTMLDivElement>(null);
+
+  function productLabel(p: any) {
+    return `${p.name} (${p.sku}) — Stock: ${p.totalStock} ${p.unit}`;
+  }
+
+  const filteredProducts = products.filter((p) => {
+    const term = productSearch.toLowerCase();
+    return (
+      p.name.toLowerCase().includes(term) || p.sku.toLowerCase().includes(term)
+    );
+  });
+
+  function selectProduct(p: any) {
+    setProductId(p.id);
+    setProductSearch(productLabel(p));
+    setIsProductDropdownOpen(false);
+  }
+
   useEffect(() => {
     async function load() {
       try {
@@ -40,8 +61,12 @@ export default function QuickMovementModal({
         setProducts(prods);
         setWarehouses(whs);
 
-        if (!productId && prods.length > 0) {
-          setProductId(prods[0].id);
+        const defaultProd = productId
+          ? prods.find((p) => p.id === productId)
+          : prods[0];
+        if (defaultProd) {
+          setProductId(defaultProd.id);
+          setProductSearch(productLabel(defaultProd));
         }
 
         const defaultWh = whs.find((w) => w.isDefault) || whs[0];
@@ -61,6 +86,17 @@ export default function QuickMovementModal({
   }, []);
 
   const selectedProduct = products.find((p) => p.id === productId);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (productFieldRef.current && !productFieldRef.current.contains(e.target as Node)) {
+        setIsProductDropdownOpen(false);
+        setProductSearch(selectedProduct ? productLabel(selectedProduct) : "");
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [selectedProduct]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -191,18 +227,44 @@ export default function QuickMovementModal({
                 <label className="block text-xs font-medium text-slate-300 mb-1.5">
                   Produit <span className="text-rose-400">*</span>
                 </label>
-                <select
-                  value={productId}
-                  onChange={(e) => setProductId(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:border-indigo-500 focus:outline-none"
-                  required
-                >
-                  {products.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name} ({p.sku}) — Stock: {p.totalStock} {p.unit}
-                    </option>
-                  ))}
-                </select>
+                <div ref={productFieldRef} className="relative">
+                  <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    type="text"
+                    placeholder="Rechercher un produit par nom ou référence..."
+                    value={productSearch}
+                    onChange={(e) => {
+                      setProductSearch(e.target.value);
+                      setProductId("");
+                      setIsProductDropdownOpen(true);
+                    }}
+                    onFocus={() => setIsProductDropdownOpen(true)}
+                    className="w-full pl-9 pr-9 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:border-indigo-500 focus:outline-none"
+                    required
+                  />
+                  <ChevronDown className="w-4 h-4 text-slate-500 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+
+                  {isProductDropdownOpen && (
+                    <div className="absolute z-10 mt-1.5 w-full max-h-56 overflow-y-auto rounded-xl bg-slate-950 border border-slate-800 shadow-lg">
+                      {filteredProducts.length === 0 ? (
+                        <div className="px-3.5 py-2.5 text-xs text-slate-500">
+                          Aucun produit trouvé.
+                        </div>
+                      ) : (
+                        filteredProducts.map((p) => (
+                          <button
+                            key={p.id}
+                            type="button"
+                            onClick={() => selectProduct(p)}
+                            className="w-full text-left px-3.5 py-2.5 text-xs text-slate-200 hover:bg-slate-800 transition cursor-pointer"
+                          >
+                            {productLabel(p)}
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Warehouses Selection */}
