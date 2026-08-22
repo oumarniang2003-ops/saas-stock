@@ -64,6 +64,13 @@ export default function ProductList({
     return matchesSearch && matchesCategory && matchesStock;
   });
 
+  function formatDimensions(p: any) {
+    if (!p.length && !p.width) return null;
+    if (p.length && p.width) return `${p.length}cm × ${p.width}cm`;
+    if (p.length) return `${p.length}cm`;
+    return `${p.width}cm`;
+  }
+
   async function handleDelete(id: string, name: string) {
     if (!confirm(`Êtes-vous sûr de vouloir supprimer le produit "${name}" ?`)) return;
     try {
@@ -235,6 +242,11 @@ export default function ProductList({
                                 {p.description}
                               </p>
                             )}
+                            {formatDimensions(p) && (
+                              <p className="text-[11px] text-slate-500 truncate max-w-[200px]">
+                                {formatDimensions(p)}
+                              </p>
+                            )}
                           </div>
                         </div>
                       </td>
@@ -385,6 +397,9 @@ export default function ProductList({
                 <h3 className="font-semibold text-white text-sm line-clamp-1">{p.name}</h3>
                 {p.description && (
                   <p className="text-xs text-slate-400 line-clamp-2 mt-1">{p.description}</p>
+                )}
+                {formatDimensions(p) && (
+                  <p className="text-[11px] text-slate-500 mt-1">{formatDimensions(p)}</p>
                 )}
               </div>
 

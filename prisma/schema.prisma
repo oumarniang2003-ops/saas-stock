@@ -118,6 +118,8 @@ model Product {
   costPrice         Decimal      @default(0.0) @db.Decimal(12, 2)
   lowStockThreshold Int          @default(5)
   unit              String       @default("pièce")
+  length            Decimal?     @db.Decimal(8, 2)
+  width             Decimal?     @db.Decimal(8, 2)
   imageUrl          String?
   categoryId        String?
   category          Category?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)

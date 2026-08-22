@@ -56,6 +56,8 @@ export async function getProducts(options?: {
       ...p,
       price: Number(p.price),
       costPrice: Number(p.costPrice),
+      length: p.length !== null ? Number(p.length) : null,
+      width: p.width !== null ? Number(p.width) : null,
       totalStock,
       isLowStock,
       isOutOfStock,
@@ -100,6 +102,8 @@ export async function getProductById(id: string) {
     ...product,
     price: Number(product.price),
     costPrice: Number(product.costPrice),
+    length: product.length !== null ? Number(product.length) : null,
+    width: product.width !== null ? Number(product.width) : null,
     totalStock,
   };
 }
@@ -112,6 +116,8 @@ export async function createProduct(data: {
   costPrice: number;
   lowStockThreshold: number;
   unit: string;
+  length?: number;
+  width?: number;
   imageUrl?: string;
   categoryId?: string;
   supplierId?: string;
@@ -133,6 +139,8 @@ export async function createProduct(data: {
         costPrice: new Prisma.Decimal(data.costPrice),
         lowStockThreshold: data.lowStockThreshold,
         unit: data.unit || "pièce",
+        length: data.length !== undefined ? new Prisma.Decimal(data.length) : undefined,
+        width: data.width !== undefined ? new Prisma.Decimal(data.width) : undefined,
         imageUrl: data.imageUrl,
         categoryId: data.categoryId || null,
         supplierId: data.supplierId || null,
@@ -191,6 +199,8 @@ export async function updateProduct(
     costPrice?: number;
     lowStockThreshold?: number;
     unit?: string;
+    length?: number;
+    width?: number;
     imageUrl?: string;
     categoryId?: string | null;
     supplierId?: string | null;
@@ -211,6 +221,8 @@ export async function updateProduct(
       ...(data.costPrice !== undefined && { costPrice: new Prisma.Decimal(data.costPrice) }),
       ...(data.lowStockThreshold !== undefined && { lowStockThreshold: data.lowStockThreshold }),
       ...(data.unit && { unit: data.unit }),
+      ...(data.length !== undefined && { length: new Prisma.Decimal(data.length) }),
+      ...(data.width !== undefined && { width: new Prisma.Decimal(data.width) }),
       ...(data.imageUrl !== undefined && { imageUrl: data.imageUrl }),
       ...(data.categoryId !== undefined && { categoryId: data.categoryId }),
       ...(data.supplierId !== undefined && { supplierId: data.supplierId }),

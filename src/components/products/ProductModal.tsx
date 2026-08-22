@@ -30,6 +30,8 @@ export default function ProductModal({
   const [costPrice, setCostPrice] = useState<number | "">(product?.costPrice ?? "");
   const [lowStockThreshold, setLowStockThreshold] = useState<number | "">(product?.lowStockThreshold ?? 5);
   const [unit, setUnit] = useState(product?.unit || "pièce");
+  const [length, setLength] = useState<number | "">(product?.length ?? "");
+  const [width, setWidth] = useState<number | "">(product?.width ?? "");
   const [imageUrl, setImageUrl] = useState(product?.imageUrl || "");
   const [categoryId, setCategoryId] = useState(product?.categoryId || "");
   const [supplierId, setSupplierId] = useState(product?.supplierId || "");
@@ -93,6 +95,8 @@ export default function ProductModal({
           costPrice: Number(costPrice) || 0,
           lowStockThreshold: Number(lowStockThreshold) || 5,
           unit,
+          length: length === "" ? undefined : Number(length),
+          width: width === "" ? undefined : Number(width),
           imageUrl: imageUrl.trim() || undefined,
           categoryId: categoryId || null,
           supplierId: supplierId || null,
@@ -106,6 +110,8 @@ export default function ProductModal({
           costPrice: Number(costPrice) || 0,
           lowStockThreshold: Number(lowStockThreshold) || 5,
           unit,
+          length: length === "" ? undefined : Number(length),
+          width: width === "" ? undefined : Number(width),
           imageUrl: imageUrl.trim() || undefined,
           categoryId: categoryId || undefined,
           supplierId: supplierId || undefined,
@@ -251,6 +257,39 @@ export default function ProductModal({
                   <option value="kg">Kilogramme (kg)</option>
                   <option value="boîte">Boîte</option>
                 </select>
+              </div>
+            </div>
+
+            {/* Row 2b: Dimensions */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1">
+                  Longueur (cm)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                  value={length}
+                  onChange={(e) => setLength(e.target.value === "" ? "" : Number(e.target.value))}
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-indigo-500 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1">
+                  Largeur (cm)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                  value={width}
+                  onChange={(e) => setWidth(e.target.value === "" ? "" : Number(e.target.value))}
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-indigo-500 focus:outline-none"
+                />
               </div>
             </div>
 
