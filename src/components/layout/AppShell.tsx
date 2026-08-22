@@ -16,6 +16,7 @@ import {
   Boxes,
   Building2,
   AlertTriangle,
+  Users,
 } from "lucide-react";
 import QuickMovementModal from "../movements/QuickMovementModal";
 
@@ -31,6 +32,7 @@ const navItems = [
   { name: "Mouvements", href: "/movements", icon: ArrowLeftRight },
   { name: "Entrepôts", href: "/warehouses", icon: Warehouse },
   { name: "Fournisseurs", href: "/suppliers", icon: Truck },
+  { name: "Équipe", href: "/team", icon: Users },
 ];
 
 export default function AppShell({

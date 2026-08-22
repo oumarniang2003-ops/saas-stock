@@ -22,6 +22,12 @@ enum MovementType {
   TRANSFER
 }
 
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  REVOKED
+}
+
 model Organization {
   id          String   @id @default(cuid())
   name        String
@@ -36,6 +42,7 @@ model Organization {
   warehouses     Warehouse[]
   stocks         Stock[]
   stockMovements StockMovement[]
+  invitations    Invitation[]
 
   @@map("organizations")
 }
@@ -183,4 +190,21 @@ model StockMovement {
   @@index([warehouseId])
   @@index([createdAt])
   @@map("stock_movements")
+}
+
+model Invitation {
+  id             String           @id @default(cuid())
+  email          String
+  role           Role             @default(EMPLOYEE)
+  status         InvitationStatus @default(PENDING)
+  organizationId String
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  invitedByName  String?
+  createdAt      DateTime         @default(now())
+  expiresAt      DateTime
+
+  @@unique([organizationId, email])
+  @@index([organizationId])
+  @@index([email])
+  @@map("invitations")
 }

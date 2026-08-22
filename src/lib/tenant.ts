@@ -42,6 +42,50 @@ export async function requireTenant(): Promise<TenantContext> {
   });
 
   if (!dbUser) {
+    // Check for a pending invitation for this email — if found, join that organization
+    // instead of creating a brand new one.
+    const invitation = await prisma.invitation.findFirst({
+      where: {
+        email: primaryEmail,
+        status: "PENDING",
+        expiresAt: { gt: new Date() },
+      },
+    });
+
+    if (invitation) {
+      const joined = await prisma.$transaction(async (tx) => {
+        const user = await tx.user.create({
+          data: {
+            clerkId,
+            email: primaryEmail,
+            name: fullName,
+            role: invitation.role,
+            organizationId: invitation.organizationId,
+          },
+          include: { organization: true },
+        });
+
+        await tx.invitation.update({
+          where: { id: invitation.id },
+          data: { status: "ACCEPTED" },
+        });
+
+        return user;
+      });
+
+      dbUser = joined;
+
+      return {
+        userId: dbUser.id,
+        clerkId: dbUser.clerkId,
+        email: dbUser.email,
+        name: dbUser.name || fullName,
+        role: dbUser.role,
+        organizationId: dbUser.organizationId,
+        organizationName: dbUser.organization.name,
+      };
+    }
+
     // Check if an organization with similar email exists or create a new organization
     const orgName = clerkUser?.firstName
       ? `Stock & Quincaillerie ${clerkUser.firstName}`
