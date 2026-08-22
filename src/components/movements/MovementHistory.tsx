@@ -117,8 +117,107 @@ export default function MovementHistory({
         </div>
       </div>
 
-      {/* Movements Table */}
-      <div className="rounded-2xl bg-slate-900/80 border border-slate-800/80 overflow-hidden shadow-lg">
+      {/* Movements: mobile card list */}
+      {filteredMovements.length === 0 ? (
+        <div className="sm:hidden rounded-2xl bg-slate-900/80 border border-slate-800/80 p-10 text-center text-xs text-slate-400">
+          Aucun mouvement ne correspond aux critères de filtre.
+        </div>
+      ) : (
+        <div className="sm:hidden space-y-3">
+          {filteredMovements.map((m) => {
+            const config = badgeConfig[m.type as keyof typeof badgeConfig] || badgeConfig.IN;
+            const Icon = config.icon;
+            const dateStr = new Date(m.createdAt).toLocaleDateString("fr-FR", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+
+            return (
+              <div
+                key={m.id}
+                className="rounded-2xl bg-slate-900/80 border border-slate-800/80 p-4 shadow-md"
+              >
+                <div className="flex items-start justify-between gap-2 mb-3">
+                  <span
+                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-bold text-[11px] border ${config.bg}`}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                    <span>{config.label}</span>
+                  </span>
+                  <span className="text-[11px] text-slate-400 font-mono shrink-0">{dateStr}</span>
+                </div>
+
+                <div className="flex items-center gap-2.5 mb-3">
+                  {m.product?.imageUrl ? (
+                    <img
+                      src={m.product.imageUrl}
+                      alt=""
+                      className="w-9 h-9 rounded-lg object-cover bg-slate-800 shrink-0"
+                    />
+                  ) : (
+                    <div className="w-9 h-9 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-[10px] font-bold text-slate-400 shrink-0">
+                      {m.product?.name.substring(0, 2).toUpperCase()}
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <p className="font-semibold text-white text-xs truncate">{m.product?.name}</p>
+                    <p className="text-[10px] text-slate-400 font-mono">{m.product?.sku}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between text-xs mb-2">
+                  <span className="text-slate-400">Quantité</span>
+                  <span
+                    className={`font-bold ${
+                      m.type === "IN"
+                        ? "text-emerald-400"
+                        : m.type === "OUT"
+                        ? "text-rose-400"
+                        : "text-indigo-300"
+                    }`}
+                  >
+                    {config.sign}
+                    {m.quantity} {m.product?.unit || "u"}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between text-xs mb-2">
+                  <span className="text-slate-400">Emplacement</span>
+                  {m.type === "TRANSFER" ? (
+                    <span className="flex items-center gap-1 text-[11px]">
+                      <span className="text-slate-400">{m.fromWarehouse?.name || "Source"}</span>
+                      <ArrowRight className="w-3 h-3 text-indigo-400 inline" />
+                      <span className="text-indigo-300 font-medium">{m.toWarehouse?.name || "Cible"}</span>
+                    </span>
+                  ) : (
+                    <span className="text-slate-300">{m.warehouse?.name || "Entrepôt principal"}</span>
+                  )}
+                </div>
+
+                {(m.reason || m.reference) && (
+                  <div className="text-xs text-slate-300 mb-2">
+                    {m.reason && <p>{m.reason}</p>}
+                    {m.reference && (
+                      <span className="text-[10px] text-indigo-400 font-mono">Réf: {m.reference}</span>
+                    )}
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-800/80">
+                  <span>Auteur</span>
+                  <span>{m.user?.name || m.user?.email || "Système"}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Movements Table: desktop only */}
+      <div className="hidden sm:block rounded-2xl bg-slate-900/80 border border-slate-800/80 overflow-hidden shadow-lg">
         {filteredMovements.length === 0 ? (
           <div className="p-10 text-center text-xs text-slate-400">
             Aucun mouvement ne correspond aux critères de filtre.

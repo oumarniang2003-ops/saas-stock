@@ -81,6 +81,252 @@ export default function ProductList({
     }
   }
 
+  function renderTable(items: any[]) {
+    return (
+      <div className="rounded-2xl bg-slate-900/80 border border-slate-800/80 overflow-hidden shadow-lg">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-slate-950/60 border-b border-slate-800 text-slate-400">
+              <tr>
+                <th className="py-3.5 px-4 font-semibold">Article</th>
+                <th className="py-3.5 px-4 font-semibold">SKU / Réf</th>
+                <th className="py-3.5 px-4 font-semibold">Catégorie</th>
+                <th className="py-3.5 px-4 font-semibold">Prix Vente</th>
+                <th className="py-3.5 px-4 font-semibold">Prix Achat</th>
+                <th className="py-3.5 px-4 font-semibold">Stock Total</th>
+                <th className="py-3.5 px-4 font-semibold">Dépôts</th>
+                <th className="py-3.5 px-4 font-semibold text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800/60">
+              {items.map((p) => {
+                return (
+                  <tr key={p.id} className="hover:bg-slate-800/30 transition">
+                    {/* Product Name & Image */}
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-3">
+                        {p.imageUrl ? (
+                          <img
+                            src={p.imageUrl}
+                            alt={p.name}
+                            className="w-10 h-10 rounded-xl object-cover bg-slate-800 shrink-0 border border-slate-800"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-xl bg-indigo-600/10 border border-indigo-500/20 text-indigo-400 font-bold text-xs flex items-center justify-center shrink-0">
+                            {p.name.substring(0, 2).toUpperCase()}
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="font-semibold text-white text-xs truncate max-w-[200px]">
+                            {p.name}
+                          </p>
+                          {p.description && (
+                            <p className="text-[11px] text-slate-400 truncate max-w-[200px]">
+                              {p.description}
+                            </p>
+                          )}
+                          {formatDimensions(p) && (
+                            <p className="text-[11px] text-slate-500 truncate max-w-[200px]">
+                              {formatDimensions(p)}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* SKU */}
+                    <td className="py-3 px-4 font-mono text-slate-300">
+                      <span className="px-2 py-0.5 rounded bg-slate-950 border border-slate-800">
+                        {p.sku}
+                      </span>
+                    </td>
+
+                    {/* Category */}
+                    <td className="py-3 px-4 text-slate-300">
+                      {p.category?.name || <span className="text-slate-500">-</span>}
+                    </td>
+
+                    {/* Selling Price */}
+                    <td className="py-3 px-4 font-semibold text-white">
+                      {new Intl.NumberFormat("fr-FR", { style: "currency", currency: "XOF" }).format(p.price)}
+                    </td>
+
+                    {/* Cost Price */}
+                    <td className="py-3 px-4 text-slate-400">
+                      {p.costPrice > 0
+                        ? new Intl.NumberFormat("fr-FR", { style: "currency", currency: "XOF" }).format(p.costPrice)
+                        : "-"}
+                    </td>
+
+                    {/* Stock badge */}
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${
+                            p.isOutOfStock
+                              ? "bg-rose-500/15 border border-rose-500/30 text-rose-400"
+                              : p.isLowStock
+                              ? "bg-amber-500/15 border border-amber-500/30 text-amber-400"
+                              : "bg-emerald-500/15 border border-emerald-500/30 text-emerald-400"
+                          }`}
+                        >
+                          {p.totalStock} {p.unit}
+                        </span>
+                        {p.isLowStock && (
+                          <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+                        )}
+                      </div>
+                    </td>
+
+                    {/* Warehouses breakdown */}
+                    <td className="py-3 px-4 text-[11px] text-slate-400">
+                      {p.stocks.length === 0 ? (
+                        <span className="text-slate-500">Aucun</span>
+                      ) : (
+                        <div className="flex flex-wrap gap-1">
+                          {p.stocks
+                            .filter((s: any) => s.quantity > 0)
+                            .map((s: any) => (
+                              <span
+                                key={s.id}
+                                className="px-1.5 py-0.5 rounded bg-slate-950 border border-slate-800 text-[10px] text-slate-300"
+                              >
+                                {s.warehouse?.name}: {s.quantity}
+                              </span>
+                            ))}
+                        </div>
+                      )}
+                    </td>
+
+                    {/* Actions */}
+                    <td className="py-3 px-4 text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        {/* Quick movement button */}
+                        <button
+                          onClick={() => setQuickMovementProductId(p.id)}
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10 transition cursor-pointer"
+                          title="Entrée / Sortie rapide"
+                        >
+                          <ArrowDownRight className="w-4 h-4" />
+                        </button>
+
+                        {/* Edit button */}
+                        <button
+                          onClick={() => setEditingProduct(p)}
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10 transition cursor-pointer"
+                          title="Modifier"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+
+                        {/* Delete button */}
+                        <button
+                          onClick={() => handleDelete(p.id, p.name)}
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition cursor-pointer"
+                          title="Supprimer"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  }
+
+  function renderGridCards(items: any[]) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {items.map((p) => (
+          <div
+            key={p.id}
+            className="rounded-2xl bg-slate-900/80 border border-slate-800/80 hover:border-slate-700/80 transition p-4 flex flex-col justify-between shadow-md group"
+          >
+            <div>
+              {/* Image */}
+              <div className="w-full h-36 rounded-xl bg-slate-950 border border-slate-800 overflow-hidden mb-3 flex items-center justify-center relative">
+                {p.imageUrl ? (
+                  <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="flex flex-col items-center justify-center text-slate-600">
+                    <Boxes className="w-8 h-8 mb-1" />
+                    <span className="text-[10px]">Aucune image</span>
+                  </div>
+                )}
+
+                {/* Stock pill overlay */}
+                <span
+                  className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-[11px] font-bold shadow-md ${
+                    p.isOutOfStock
+                      ? "bg-rose-500 text-white"
+                      : p.isLowStock
+                      ? "bg-amber-500 text-slate-950"
+                      : "bg-emerald-500 text-white"
+                  }`}
+                >
+                  {p.totalStock} {p.unit}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1">
+                <span className="font-mono bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">
+                  {p.sku}
+                </span>
+                <span>{p.category?.name || "Général"}</span>
+              </div>
+
+              <h3 className="font-semibold text-white text-sm line-clamp-1">{p.name}</h3>
+              {p.description && (
+                <p className="text-xs text-slate-400 line-clamp-2 mt-1">{p.description}</p>
+              )}
+              {formatDimensions(p) && (
+                <p className="text-[11px] text-slate-500 mt-1">{formatDimensions(p)}</p>
+              )}
+            </div>
+
+            <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
+              <div>
+                <span className="text-[10px] text-slate-400 block">Prix unitaire</span>
+                <span className="text-sm font-bold text-white">
+                  {new Intl.NumberFormat("fr-FR", { style: "currency", currency: "XOF" }).format(p.price)}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setQuickMovementProductId(p.id)}
+                  className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition cursor-pointer"
+                  title="Mouvement rapide"
+                >
+                  <ArrowDownRight className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setEditingProduct(p)}
+                  className="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white transition cursor-pointer"
+                  title="Modifier"
+                >
+                  <Edit2 className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handleDelete(p.id, p.name)}
+                  className="p-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-rose-400 transition cursor-pointer"
+                  title="Supprimer"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Top Action Bar */}
@@ -198,246 +444,16 @@ export default function ProductList({
             </button>
           )}
         </div>
-      ) : viewMode === "table" ? (
-        /* TABLE VIEW */
-        <div className="rounded-2xl bg-slate-900/80 border border-slate-800/80 overflow-hidden shadow-lg">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-950/60 border-b border-slate-800 text-slate-400">
-                <tr>
-                  <th className="py-3.5 px-4 font-semibold">Article</th>
-                  <th className="py-3.5 px-4 font-semibold">SKU / Réf</th>
-                  <th className="py-3.5 px-4 font-semibold">Catégorie</th>
-                  <th className="py-3.5 px-4 font-semibold">Prix Vente</th>
-                  <th className="py-3.5 px-4 font-semibold">Prix Achat</th>
-                  <th className="py-3.5 px-4 font-semibold">Stock Total</th>
-                  <th className="py-3.5 px-4 font-semibold">Dépôts</th>
-                  <th className="py-3.5 px-4 font-semibold text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/60">
-                {filteredProducts.map((p) => {
-                  return (
-                    <tr key={p.id} className="hover:bg-slate-800/30 transition">
-                      {/* Product Name & Image */}
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-3">
-                          {p.imageUrl ? (
-                            <img
-                              src={p.imageUrl}
-                              alt={p.name}
-                              className="w-10 h-10 rounded-xl object-cover bg-slate-800 shrink-0 border border-slate-800"
-                            />
-                          ) : (
-                            <div className="w-10 h-10 rounded-xl bg-indigo-600/10 border border-indigo-500/20 text-indigo-400 font-bold text-xs flex items-center justify-center shrink-0">
-                              {p.name.substring(0, 2).toUpperCase()}
-                            </div>
-                          )}
-                          <div className="min-w-0">
-                            <p className="font-semibold text-white text-xs truncate max-w-[200px]">
-                              {p.name}
-                            </p>
-                            {p.description && (
-                              <p className="text-[11px] text-slate-400 truncate max-w-[200px]">
-                                {p.description}
-                              </p>
-                            )}
-                            {formatDimensions(p) && (
-                              <p className="text-[11px] text-slate-500 truncate max-w-[200px]">
-                                {formatDimensions(p)}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* SKU */}
-                      <td className="py-3 px-4 font-mono text-slate-300">
-                        <span className="px-2 py-0.5 rounded bg-slate-950 border border-slate-800">
-                          {p.sku}
-                        </span>
-                      </td>
-
-                      {/* Category */}
-                      <td className="py-3 px-4 text-slate-300">
-                        {p.category?.name || <span className="text-slate-500">-</span>}
-                      </td>
-
-                      {/* Selling Price */}
-                      <td className="py-3 px-4 font-semibold text-white">
-                        {new Intl.NumberFormat("fr-FR", { style: "currency", currency: "XOF" }).format(p.price)}
-                      </td>
-
-                      {/* Cost Price */}
-                      <td className="py-3 px-4 text-slate-400">
-                        {p.costPrice > 0
-                          ? new Intl.NumberFormat("fr-FR", { style: "currency", currency: "XOF" }).format(p.costPrice)
-                          : "-"}
-                      </td>
-
-                      {/* Stock badge */}
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-1.5">
-                          <span
-                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${
-                              p.isOutOfStock
-                                ? "bg-rose-500/15 border border-rose-500/30 text-rose-400"
-                                : p.isLowStock
-                                ? "bg-amber-500/15 border border-amber-500/30 text-amber-400"
-                                : "bg-emerald-500/15 border border-emerald-500/30 text-emerald-400"
-                            }`}
-                          >
-                            {p.totalStock} {p.unit}
-                          </span>
-                          {p.isLowStock && (
-                            <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
-                          )}
-                        </div>
-                      </td>
-
-                      {/* Warehouses breakdown */}
-                      <td className="py-3 px-4 text-[11px] text-slate-400">
-                        {p.stocks.length === 0 ? (
-                          <span className="text-slate-500">Aucun</span>
-                        ) : (
-                          <div className="flex flex-wrap gap-1">
-                            {p.stocks
-                              .filter((s: any) => s.quantity > 0)
-                              .map((s: any) => (
-                                <span
-                                  key={s.id}
-                                  className="px-1.5 py-0.5 rounded bg-slate-950 border border-slate-800 text-[10px] text-slate-300"
-                                >
-                                  {s.warehouse?.name}: {s.quantity}
-                                </span>
-                              ))}
-                          </div>
-                        )}
-                      </td>
-
-                      {/* Actions */}
-                      <td className="py-3 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          {/* Quick movement button */}
-                          <button
-                            onClick={() => setQuickMovementProductId(p.id)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10 transition cursor-pointer"
-                            title="Entrée / Sortie rapide"
-                          >
-                            <ArrowDownRight className="w-4 h-4" />
-                          </button>
-
-                          {/* Edit button */}
-                          <button
-                            onClick={() => setEditingProduct(p)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10 transition cursor-pointer"
-                            title="Modifier"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-
-                          {/* Delete button */}
-                          <button
-                            onClick={() => handleDelete(p.id, p.name)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition cursor-pointer"
-                            title="Supprimer"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
       ) : (
-        /* GRID VIEW */
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filteredProducts.map((p) => (
-            <div
-              key={p.id}
-              className="rounded-2xl bg-slate-900/80 border border-slate-800/80 hover:border-slate-700/80 transition p-4 flex flex-col justify-between shadow-md group"
-            >
-              <div>
-                {/* Image */}
-                <div className="w-full h-36 rounded-xl bg-slate-950 border border-slate-800 overflow-hidden mb-3 flex items-center justify-center relative">
-                  {p.imageUrl ? (
-                    <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="flex flex-col items-center justify-center text-slate-600">
-                      <Boxes className="w-8 h-8 mb-1" />
-                      <span className="text-[10px]">Aucune image</span>
-                    </div>
-                  )}
+        <>
+          {/* Mobile: always cards */}
+          <div className="sm:hidden">{renderGridCards(filteredProducts)}</div>
 
-                  {/* Stock pill overlay */}
-                  <span
-                    className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-[11px] font-bold shadow-md ${
-                      p.isOutOfStock
-                        ? "bg-rose-500 text-white"
-                        : p.isLowStock
-                        ? "bg-amber-500 text-slate-950"
-                        : "bg-emerald-500 text-white"
-                    }`}
-                  >
-                    {p.totalStock} {p.unit}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1">
-                  <span className="font-mono bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">
-                    {p.sku}
-                  </span>
-                  <span>{p.category?.name || "Général"}</span>
-                </div>
-
-                <h3 className="font-semibold text-white text-sm line-clamp-1">{p.name}</h3>
-                {p.description && (
-                  <p className="text-xs text-slate-400 line-clamp-2 mt-1">{p.description}</p>
-                )}
-                {formatDimensions(p) && (
-                  <p className="text-[11px] text-slate-500 mt-1">{formatDimensions(p)}</p>
-                )}
-              </div>
-
-              <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
-                <div>
-                  <span className="text-[10px] text-slate-400 block">Prix unitaire</span>
-                  <span className="text-sm font-bold text-white">
-                    {new Intl.NumberFormat("fr-FR", { style: "currency", currency: "XOF" }).format(p.price)}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => setQuickMovementProductId(p.id)}
-                    className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition cursor-pointer"
-                    title="Mouvement rapide"
-                  >
-                    <ArrowDownRight className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => setEditingProduct(p)}
-                    className="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white transition cursor-pointer"
-                    title="Modifier"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(p.id, p.name)}
-                    className="p-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-rose-400 transition cursor-pointer"
-                    title="Supprimer"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+          {/* Desktop: table/grid toggle */}
+          <div className="hidden sm:block">
+            {viewMode === "table" ? renderTable(filteredProducts) : renderGridCards(filteredProducts)}
+          </div>
+        </>
       )}
 
       {/* Modals */}
