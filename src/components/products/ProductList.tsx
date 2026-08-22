@@ -253,13 +253,13 @@ export default function ProductList({
 
                       {/* Selling Price */}
                       <td className="py-3 px-4 font-semibold text-white">
-                        {new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(p.price)}
+                        {new Intl.NumberFormat("fr-FR", { style: "currency", currency: "XOF" }).format(p.price)}
                       </td>
 
                       {/* Cost Price */}
                       <td className="py-3 px-4 text-slate-400">
                         {p.costPrice > 0
-                          ? new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(p.costPrice)
+                          ? new Intl.NumberFormat("fr-FR", { style: "currency", currency: "XOF" }).format(p.costPrice)
                           : "-"}
                       </td>
 
@@ -392,7 +392,7 @@ export default function ProductList({
                 <div>
                   <span className="text-[10px] text-slate-400 block">Prix unitaire</span>
                   <span className="text-sm font-bold text-white">
-                    {new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(p.price)}
+                    {new Intl.NumberFormat("fr-FR", { style: "currency", currency: "XOF" }).format(p.price)}
                   </span>
                 </div>
 

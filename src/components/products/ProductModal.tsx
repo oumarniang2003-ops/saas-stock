@@ -258,7 +258,7 @@ export default function ProductModal({
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1">
-                  Prix de Vente (€)
+                  Prix de Vente (FCFA)
                 </label>
                 <input
                   type="number"
@@ -273,7 +273,7 @@ export default function ProductModal({
 
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1">
-                  Prix d'Achat (€ HT)
+                  Prix d'Achat (FCFA HT)
                 </label>
                 <input
                   type="number"

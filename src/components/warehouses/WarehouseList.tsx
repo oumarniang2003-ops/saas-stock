@@ -93,7 +93,7 @@ export default function WarehouseList({ warehouses }: WarehouseListProps) {
                   <span className="text-[10px] text-slate-400 block">Valeur estimée</span>
                   <span className="text-sm font-bold text-emerald-400 flex items-center gap-1 mt-0.5">
                     <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
-                    {new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(wh.totalValue)}
+                    {new Intl.NumberFormat("fr-FR", { style: "currency", currency: "XOF" }).format(wh.totalValue)}
                   </span>
                 </div>
               </div>

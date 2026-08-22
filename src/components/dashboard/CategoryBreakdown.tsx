@@ -41,7 +41,7 @@ export default function CategoryBreakdown({ categories, totalValue }: CategoryBr
               <div className="flex items-center justify-between text-xs">
                 <span className="font-medium text-slate-300">{cat.name}</span>
                 <span className="text-slate-400 font-mono">
-                  {new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(cat.value)}{" "}
+                  {new Intl.NumberFormat("fr-FR", { style: "currency", currency: "XOF" }).format(cat.value)}{" "}
                   <span className="text-slate-400">({percentage.toFixed(0)}%)</span>
                 </span>
               </div>

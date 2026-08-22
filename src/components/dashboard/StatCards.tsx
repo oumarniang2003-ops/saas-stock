@@ -32,7 +32,7 @@ export default function StatCards({ metrics }: StatCardsProps) {
           </div>
         </div>
         <div className="text-2xl font-bold text-white tracking-tight">
-          {new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(metrics.totalStockValue)}
+          {new Intl.NumberFormat("fr-FR", { style: "currency", currency: "XOF" }).format(metrics.totalStockValue)}
         </div>
         <p className="text-xs text-slate-400 mt-2 flex items-center gap-1.5">
           <span className="text-emerald-400 font-medium flex items-center">
