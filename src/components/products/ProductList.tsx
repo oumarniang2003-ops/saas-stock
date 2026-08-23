@@ -18,7 +18,9 @@ import {
 import ProductModal from "./ProductModal";
 import CategoryModal from "./CategoryModal";
 import QuickMovementModal from "../movements/QuickMovementModal";
+import ExportMenu from "../shared/ExportMenu";
 import { deleteProduct } from "@/actions/products";
+import { exportProductsToExcel, exportProductsToPDF } from "@/lib/export";
 import { useRouter } from "next/navigation";
 
 interface ProductListProps {
@@ -341,6 +343,11 @@ export default function ProductList({
         </div>
 
         <div className="flex items-center gap-2.5">
+          <ExportMenu
+            onExportExcel={() => exportProductsToExcel(filteredProducts)}
+            onExportPDF={() => exportProductsToPDF(filteredProducts)}
+          />
+
           <button
             onClick={() => setIsCategoryModalOpen(true)}
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs font-semibold transition cursor-pointer"

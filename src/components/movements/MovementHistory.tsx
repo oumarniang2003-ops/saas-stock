@@ -12,6 +12,8 @@ import {
   User,
   Building,
 } from "lucide-react";
+import ExportMenu from "../shared/ExportMenu";
+import { exportMovementsToExcel, exportMovementsToPDF } from "@/lib/export";
 
 interface MovementHistoryProps {
   movements: any[];
@@ -114,6 +116,11 @@ export default function MovementHistory({
               </option>
             ))}
           </select>
+
+          <ExportMenu
+            onExportExcel={() => exportMovementsToExcel(filteredMovements)}
+            onExportPDF={() => exportMovementsToPDF(filteredMovements)}
+          />
         </div>
       </div>
 
