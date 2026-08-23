@@ -28,6 +28,14 @@ enum InvitationStatus {
   REVOKED
 }
 
+enum QuoteStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
 model Organization {
   id          String   @id @default(cuid())
   name        String
@@ -43,6 +51,7 @@ model Organization {
   stocks         Stock[]
   stockMovements StockMovement[]
   invitations    Invitation[]
+  quotes         Quote[]
 
   @@map("organizations")
 }
@@ -140,6 +149,7 @@ model Product {
 
   stocks         Stock[]
   stockMovements StockMovement[]
+  quoteItems     QuoteItem[]
 
   @@unique([organizationId, sku])
   @@unique([organizationId, barcode])
@@ -209,4 +219,41 @@ model Invitation {
   @@index([organizationId])
   @@index([email])
   @@map("invitations")
+}
+
+model Quote {
+  id             String       @id @default(cuid())
+  number         String
+  clientName     String
+  clientEmail    String?
+  clientPhone    String?
+  clientAddress  String?
+  status         QuoteStatus  @default(DRAFT)
+  notes          String?
+  validUntil     DateTime?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  items QuoteItem[]
+
+  @@unique([organizationId, number])
+  @@index([organizationId])
+  @@map("quotes")
+}
+
+model QuoteItem {
+  id          String   @id @default(cuid())
+  quoteId     String
+  quote       Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  productId   String?
+  product     Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  description String
+  quantity    Int      @default(1)
+  unitPrice   Decimal  @default(0.0) @db.Decimal(12, 2)
+
+  @@index([quoteId])
+  @@index([productId])
+  @@map("quote_items")
 }

@@ -17,6 +17,7 @@ import {
   Building2,
   AlertTriangle,
   Users,
+  FileText,
 } from "lucide-react";
 import QuickMovementModal from "../movements/QuickMovementModal";
 
@@ -30,6 +31,7 @@ const navItems = [
   { name: "Tableau de bord", href: "/dashboard", icon: LayoutDashboard },
   { name: "Produits & Stock", href: "/products", icon: Package },
   { name: "Mouvements", href: "/movements", icon: ArrowLeftRight },
+  { name: "Devis", href: "/quotes", icon: FileText },
   { name: "Entrepôts", href: "/warehouses", icon: Warehouse },
   { name: "Fournisseurs", href: "/suppliers", icon: Truck },
   { name: "Équipe", href: "/team", icon: Users },
