@@ -30,6 +30,7 @@ export async function getProducts(options?: {
       { name: { contains: options.search, mode: "insensitive" } },
       { sku: { contains: options.search, mode: "insensitive" } },
       { description: { contains: options.search, mode: "insensitive" } },
+      { barcode: { contains: options.search, mode: "insensitive" } },
     ];
   }
 
@@ -118,6 +119,7 @@ export async function createProduct(data: {
   unit: string;
   length?: number;
   width?: number;
+  barcode?: string;
   imageUrl?: string;
   categoryId?: string;
   supplierId?: string;
@@ -141,6 +143,7 @@ export async function createProduct(data: {
         unit: data.unit || "pièce",
         length: data.length !== undefined ? new Prisma.Decimal(data.length) : undefined,
         width: data.width !== undefined ? new Prisma.Decimal(data.width) : undefined,
+        barcode: data.barcode || null,
         imageUrl: data.imageUrl,
         categoryId: data.categoryId || null,
         supplierId: data.supplierId || null,
@@ -201,6 +204,7 @@ export async function updateProduct(
     unit?: string;
     length?: number;
     width?: number;
+    barcode?: string | null;
     imageUrl?: string;
     categoryId?: string | null;
     supplierId?: string | null;
@@ -223,6 +227,7 @@ export async function updateProduct(
       ...(data.unit && { unit: data.unit }),
       ...(data.length !== undefined && { length: new Prisma.Decimal(data.length) }),
       ...(data.width !== undefined && { width: new Prisma.Decimal(data.width) }),
+      ...(data.barcode !== undefined && { barcode: data.barcode || null }),
       ...(data.imageUrl !== undefined && { imageUrl: data.imageUrl }),
       ...(data.categoryId !== undefined && { categoryId: data.categoryId }),
       ...(data.supplierId !== undefined && { supplierId: data.supplierId }),

@@ -127,6 +127,7 @@ model Product {
   unit              String       @default("pièce")
   length            Decimal?     @db.Decimal(8, 2)
   width             Decimal?     @db.Decimal(8, 2)
+  barcode           String?
   imageUrl          String?
   categoryId        String?
   category          Category?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
@@ -141,6 +142,7 @@ model Product {
   stockMovements StockMovement[]
 
   @@unique([organizationId, sku])
+  @@unique([organizationId, barcode])
   @@index([organizationId])
   @@index([categoryId])
   @@map("products")

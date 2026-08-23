@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, Upload, Loader2, AlertCircle, Image as ImageIcon } from "lucide-react";
+import { X, Upload, Loader2, AlertCircle, Image as ImageIcon, ScanLine } from "lucide-react";
 import { createProduct, updateProduct } from "@/actions/products";
+import BarcodeScannerModal from "./BarcodeScannerModal";
 
 interface ProductModalProps {
   product?: any;
@@ -32,6 +33,8 @@ export default function ProductModal({
   const [unit, setUnit] = useState(product?.unit || "pièce");
   const [length, setLength] = useState<number | "">(product?.length ?? "");
   const [width, setWidth] = useState<number | "">(product?.width ?? "");
+  const [barcode, setBarcode] = useState(product?.barcode || "");
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [imageUrl, setImageUrl] = useState(product?.imageUrl || "");
   const [categoryId, setCategoryId] = useState(product?.categoryId || "");
   const [supplierId, setSupplierId] = useState(product?.supplierId || "");
@@ -97,6 +100,7 @@ export default function ProductModal({
           unit,
           length: length === "" ? undefined : Number(length),
           width: width === "" ? undefined : Number(width),
+          barcode: barcode.trim() || null,
           imageUrl: imageUrl.trim() || undefined,
           categoryId: categoryId || null,
           supplierId: supplierId || null,
@@ -112,6 +116,7 @@ export default function ProductModal({
           unit,
           length: length === "" ? undefined : Number(length),
           width: width === "" ? undefined : Number(width),
+          barcode: barcode.trim() || undefined,
           imageUrl: imageUrl.trim() || undefined,
           categoryId: categoryId || undefined,
           supplierId: supplierId || undefined,
@@ -293,6 +298,30 @@ export default function ProductModal({
               </div>
             </div>
 
+            {/* Barcode */}
+            <div>
+              <label className="block text-xs font-medium text-slate-300 mb-1">
+                Code-barres
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  placeholder="Ex: 3070461234567"
+                  value={barcode}
+                  onChange={(e) => setBarcode(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs font-mono focus:border-indigo-500 focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => setIsScannerOpen(true)}
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-medium transition cursor-pointer shrink-0"
+                >
+                  <ScanLine className="w-3.5 h-3.5" />
+                  <span>Scanner</span>
+                </button>
+              </div>
+            </div>
+
             {/* Row 3: Prices & Low Stock Threshold */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
@@ -464,6 +493,16 @@ export default function ProductModal({
           </form>
         </div>
       </div>
+
+      {isScannerOpen && (
+        <BarcodeScannerModal
+          onDetected={(code) => {
+            setBarcode(code);
+            setIsScannerOpen(false);
+          }}
+          onClose={() => setIsScannerOpen(false)}
+        />
+      )}
     </div>
   );
 }

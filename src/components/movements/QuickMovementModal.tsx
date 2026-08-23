@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { X, ArrowDownRight, ArrowUpRight, Sliders, ArrowLeftRight, Loader2, AlertCircle, CheckCircle2, Search, ChevronDown } from "lucide-react";
+import { X, ArrowDownRight, ArrowUpRight, Sliders, ArrowLeftRight, Loader2, AlertCircle, CheckCircle2, Search, ChevronDown, ScanLine } from "lucide-react";
 import { recordStockMovement } from "@/actions/movements";
 import { getProducts } from "@/actions/products";
 import { getWarehouses } from "@/actions/warehouses";
+import BarcodeScannerModal from "../products/BarcodeScannerModal";
 
 interface QuickMovementModalProps {
   onClose: () => void;
@@ -35,6 +36,7 @@ export default function QuickMovementModal({
 
   const [productSearch, setProductSearch] = useState("");
   const [isProductDropdownOpen, setIsProductDropdownOpen] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
   const productFieldRef = useRef<HTMLDivElement>(null);
 
   function productLabel(p: any) {
@@ -52,6 +54,21 @@ export default function QuickMovementModal({
     setProductId(p.id);
     setProductSearch(productLabel(p));
     setIsProductDropdownOpen(false);
+  }
+
+  function handleBarcodeDetected(code: string) {
+    setIsScannerOpen(false);
+    const normalized = code.trim().toLowerCase();
+    const match = products.find(
+      (p) => p.barcode?.toLowerCase() === normalized || p.sku?.toLowerCase() === normalized
+    );
+
+    if (match) {
+      selectProduct(match);
+      setError(null);
+    } else {
+      setError(`Aucun produit ne correspond au code scanné (${code}).`);
+    }
   }
 
   useEffect(() => {
@@ -227,43 +244,54 @@ export default function QuickMovementModal({
                 <label className="block text-xs font-medium text-slate-300 mb-1.5">
                   Produit <span className="text-rose-400">*</span>
                 </label>
-                <div ref={productFieldRef} className="relative">
-                  <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                  <input
-                    type="text"
-                    placeholder="Rechercher un produit par nom ou référence..."
-                    value={productSearch}
-                    onChange={(e) => {
-                      setProductSearch(e.target.value);
-                      setProductId("");
-                      setIsProductDropdownOpen(true);
-                    }}
-                    onFocus={() => setIsProductDropdownOpen(true)}
-                    className="w-full pl-9 pr-9 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:border-indigo-500 focus:outline-none"
-                    required
-                  />
-                  <ChevronDown className="w-4 h-4 text-slate-500 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <div className="flex items-center gap-2">
+                  <div ref={productFieldRef} className="relative flex-1">
+                    <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <input
+                      type="text"
+                      placeholder="Rechercher un produit par nom ou référence..."
+                      value={productSearch}
+                      onChange={(e) => {
+                        setProductSearch(e.target.value);
+                        setProductId("");
+                        setIsProductDropdownOpen(true);
+                      }}
+                      onFocus={() => setIsProductDropdownOpen(true)}
+                      className="w-full pl-9 pr-9 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:border-indigo-500 focus:outline-none"
+                      required
+                    />
+                    <ChevronDown className="w-4 h-4 text-slate-500 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
 
-                  {isProductDropdownOpen && (
-                    <div className="absolute z-10 mt-1.5 w-full max-h-56 overflow-y-auto rounded-xl bg-slate-950 border border-slate-800 shadow-lg">
-                      {filteredProducts.length === 0 ? (
-                        <div className="px-3.5 py-2.5 text-xs text-slate-500">
-                          Aucun produit trouvé.
-                        </div>
-                      ) : (
-                        filteredProducts.map((p) => (
-                          <button
-                            key={p.id}
-                            type="button"
-                            onClick={() => selectProduct(p)}
-                            className="w-full text-left px-3.5 py-2.5 text-xs text-slate-200 hover:bg-slate-800 transition cursor-pointer"
-                          >
-                            {productLabel(p)}
-                          </button>
-                        ))
-                      )}
-                    </div>
-                  )}
+                    {isProductDropdownOpen && (
+                      <div className="absolute z-10 mt-1.5 w-full max-h-56 overflow-y-auto rounded-xl bg-slate-950 border border-slate-800 shadow-lg">
+                        {filteredProducts.length === 0 ? (
+                          <div className="px-3.5 py-2.5 text-xs text-slate-500">
+                            Aucun produit trouvé.
+                          </div>
+                        ) : (
+                          filteredProducts.map((p) => (
+                            <button
+                              key={p.id}
+                              type="button"
+                              onClick={() => selectProduct(p)}
+                              className="w-full text-left px-3.5 py-2.5 text-xs text-slate-200 hover:bg-slate-800 transition cursor-pointer"
+                            >
+                              {productLabel(p)}
+                            </button>
+                          ))
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsScannerOpen(true)}
+                    className="flex items-center justify-center p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white transition cursor-pointer shrink-0"
+                    title="Scanner un code-barres"
+                  >
+                    <ScanLine className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
 
@@ -410,6 +438,13 @@ export default function QuickMovementModal({
           )}
         </div>
       </div>
+
+      {isScannerOpen && (
+        <BarcodeScannerModal
+          onDetected={handleBarcodeDetected}
+          onClose={() => setIsScannerOpen(false)}
+        />
+      )}
     </div>
   );
 }
